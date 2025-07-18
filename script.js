@@ -10,12 +10,15 @@ document.getElementById('ask-button').addEventListener('click', async () => {
     });
 
     const data = await res.json();
+
     if (res.ok) {
       answerBox.innerHTML = data.answer || "✅ Answer received.";
     } else {
-      answerBox.innerHTML = "❌ Error: " + (data.detail || "Unknown");
+      // FIXED: show full error content instead of "[object Object]"
+      const errorMessage = data.detail || JSON.stringify(data);
+      answerBox.innerHTML = `❌ Error: ${errorMessage}`;
     }
   } catch (err) {
-    answerBox.innerHTML = "⚠️ Request failed: " + err.message;
+    answerBox.innerHTML = `⚠️ Request failed: ${err.message}`;
   }
 });
