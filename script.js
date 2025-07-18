@@ -3,7 +3,7 @@ document.getElementById('ask-button').addEventListener('click', async () => {
   const answerBox = document.getElementById('answer-box');
 
   try {
-    const res = await fetch('https://YOUR-BACKEND.onrender.com/ask', {
+    const res = await fetch('https://jurisrx-backend.onrender.com/ask', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ question })
