@@ -1,17 +1,17 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>JurisRx Login</title>
+  <title>JurisRx AI</title>
+  <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <h1>Login to JurisRx</h1>
-  <form id="login-form">
-    <label>Email: <input type="email" id="email" required /></label><br />
-    <label>Password: <input type="password" id="password" required /></label><br />
-    <button type="submit">Login</button>
-  </form>
+  <h1>Ask JurisRx</h1>
 
-  <p id="result"></p>
+  <textarea id="question" placeholder="Enter your pharmacy law question..." rows="5" cols="60"></textarea><br>
+  <button id="ask-button">Ask</button>
+
+  <h2>Answer:</h2>
+  <div id="answer-box"></div>
 
   <script src="script.js"></script>
 </body>
