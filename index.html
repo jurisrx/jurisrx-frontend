@@ -1,18 +1,123 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <title>JurisRx AI</title>
-  <link rel="stylesheet" href="style.css">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>JurisRx Legal AI</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+    }
+    .loader {
+      border: 4px solid #f3f3f3;
+      border-top: 4px solid #3b82f6;
+      border-radius: 50%;
+      width: 36px;
+      height: 36px;
+      animation: spin 1s linear infinite;
+    }
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+  </style>
 </head>
-<body>
-  <h1>Ask JurisRx</h1>
+<body class="bg-gray-100 text-gray-800 min-h-screen flex items-center justify-center p-4">
+  <div class="bg-white rounded-2xl shadow-xl max-w-2xl w-full p-8">
+    <h1 class="text-3xl font-semibold text-blue-600 mb-6 text-center">JurisRx</h1>
+    <p class="text-center text-sm text-gray-500 mb-6">Your AI-powered Pharmacy Law Assistant</p>
 
-  <textarea id="question" placeholder="Enter your pharmacy law question..." rows="5" cols="60"></textarea><br>
-  <button id="ask-button">Ask</button>
+    <div class="mb-4">
+      <label for="state" class="block text-sm font-medium mb-1">Select State</label>
+      <select id="state" class="w-full border rounded-lg p-2">
+        <option value="indiana">Indiana</option>
+        <option value="tennessee">Tennessee</option>
+        <option value="south_carolina">South Carolina</option>
+      </select>
+    </div>
 
-  <h2>Answer:</h2>
-  <div id="answer-box"></div>
+    <div class="mb-4">
+      <label for="question" class="block text-sm font-medium mb-1">Your Legal Question</label>
+      <textarea id="question" class="w-full border rounded-lg p-2 h-24" placeholder="e.g., What is the pharmacist to technician ratio in Indiana?"></textarea>
+    </div>
 
-  <script src="script.js"></script>
+    <button id="ask-button" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition">
+      Ask the AI
+    </button>
+
+    <div id="loading" class="mt-6 hidden flex justify-center">
+      <div class="loader"></div>
+    </div>
+
+    <div id="answer-box" class="mt-6 hidden">
+      <h2 class="text-xl font-semibold mb-2">AI Answer:</h2>
+      <div id="answer" class="bg-gray-50 border p-4 rounded-lg whitespace-pre-line"></div>
+    </div>
+  </div>
+
+  <script>
+    const askButton = document.getElementById('ask-button');
+    const stateSelect = document.getElementById('state');
+    const questionInput = document.getElementById('question');
+    const loading = document.getElementById('loading');
+    const answerBox = document.getElementById('answer-box');
+    const answerDiv = document.getElementById('answer');
+
+    askButton.addEventListener('click', async () => {
+      const state = stateSelect.value;
+      const question = questionInput.value.trim();
+
+      if (!question) {
+        alert("Please enter a legal question.");
+        return;
+      }
+
+      answerBox.classList.add('hidden');
+      loading.classList.remove('hidden');
+      answerDiv.innerHTML = '';
+
+      console.log('Sending request:', { state, question });
+
+      try {
+        const response = await fetch("https://jurisrx-backend.onrender.com/ask", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({ state, question })
+        });
+
+        const contentType = response.headers.get("content-type");
+        let data;
+
+        if (contentType && contentType.includes("application/json")) {
+          data = await response.json();
+        } else {
+          const text = await response.text();
+          throw new Error(`Unexpected response: ${text}`);
+        }
+
+        loading.classList.add('hidden');
+
+        if (response.ok) {
+          const rawAnswer = data.answer || "";
+          const formattedText = rawAnswer.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>');
+          answerDiv.innerHTML = formattedText;
+          answerBox.classList.remove('hidden');
+        } else {
+          const errMsg = data.detail || data.error || JSON.stringify(data) || 'An error occurred.';
+          answerDiv.textContent = `❌ Error: ${errMsg}`;
+          answerBox.classList.remove('hidden');
+        }
+      } catch (err) {
+        loading.classList.add('hidden');
+        answerDiv.textContent = `⚠️ Request failed: ${err.message}`;
+        answerBox.classList.remove('hidden');
+        console.error("Fetch error:", err);
+      }
+    });
+  </script>
 </body>
 </html>
