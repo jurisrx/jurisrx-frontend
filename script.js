@@ -1,27 +1,21 @@
-const form = document.getElementById('login-form');
-const result = document.getElementById('result');
-
-form.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const email = document.getElementById('email').value;
-  const password = document.getElementById('password').value;
+document.getElementById('ask-button').addEventListener('click', async () => {
+  const question = document.getElementById('question').value;
+  const answerBox = document.getElementById('answer-box');
 
   try {
-    const response = await fetch('https://jurisrx-api.onrender.com/login', {
+    const res = await fetch('https://YOUR-BACKEND.onrender.com/ask', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password })
+      body: JSON.stringify({ question })
     });
 
-    const data = await response.json();
-
-    if (response.ok) {
-      result.textContent = '✅ Login successful!';
-      console.log(data);
+    const data = await res.json();
+    if (res.ok) {
+      answerBox.innerHTML = data.answer || "✅ Answer received.";
     } else {
-      result.textContent = '❌ Login failed: ' + (data.detail || 'Unknown error');
+      answerBox.innerHTML = "❌ Error: " + (data.detail || "Unknown");
     }
-  } catch (error) {
-    result.textContent = '⚠️ Error: ' + error.message;
+  } catch (err) {
+    answerBox.innerHTML = "⚠️ Request failed: " + err.message;
   }
 });
