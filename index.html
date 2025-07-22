@@ -10,6 +10,16 @@
     .section { margin-bottom: 20px; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.05); }
     button { padding: 8px 16px; font-size: 16px; cursor: pointer; }
     input, select, textarea { padding: 8px; font-size: 16px; width: 100%; margin-top: 8px; margin-bottom: 12px; }
+    #token-display { 
+      margin-top: 10px; 
+      background: #e0e0e0; 
+      padding: 10px; 
+      border-radius: 4px; 
+      font-family: monospace; 
+      word-break: break-all;
+      max-height: 120px;
+      overflow-y: auto;
+    }
   </style>
   <!-- Firebase App (Core) -->
   <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -38,6 +48,10 @@
   <div id="user-info" class="section hidden">
     <h2>Welcome, <span id="user-email"></span></h2>
     <button id="logout-button">Logout</button>
+
+    <!-- New token display -->
+    <h3>Your Authorization Token:</h3>
+    <div id="token-display" title="Your Firebase ID Token"></div>
   </div>
 
   <div id="ask-section" class="section hidden">
@@ -81,6 +95,7 @@
     const answerBox = document.getElementById('answer-box');
     const answerDiv = document.getElementById('answer');
     const loading = document.getElementById('loading');
+    const tokenDisplay = document.getElementById('token-display');
 
     // === Sign Up ===
     document.getElementById('signup-button').addEventListener('click', async () => {
@@ -116,6 +131,7 @@
     document.getElementById('logout-button').addEventListener('click', async () => {
       await auth.signOut();
       currentUserToken = null;
+      tokenDisplay.textContent = '';
     });
 
     // === Auth State Listener ===
@@ -127,12 +143,14 @@
         userEmailSpan.textContent = user.email;
         askSection.classList.remove('hidden');
         currentUserToken = await user.getIdToken();
+        tokenDisplay.textContent = currentUserToken;
       } else {
         loginSection.classList.remove('hidden');
         signupSection.classList.remove('hidden');
         userInfo.classList.add('hidden');
         askSection.classList.add('hidden');
         answerBox.classList.add('hidden');
+        tokenDisplay.textContent = '';
       }
     });
 
