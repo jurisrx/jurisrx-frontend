@@ -1,107 +1,220 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>JurisRx AI Q&A</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      padding: 40px;
-      background-color: #f4f4f4;
-    }
-    #container {
-      max-width: 600px;
-      margin: auto;
-      background: white;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-    }
-    input, select, button, textarea {
-      width: 100%;
-      margin-top: 10px;
-      padding: 10px;
-      font-size: 16px;
-    }
-    #answer {
-      margin-top: 20px;
-      background-color: #eef;
-      padding: 15px;
-      border-radius: 6px;
-      white-space: pre-wrap;
-    }
-    .hidden {
-      display: none;
-    }
-  </style>
-</head>
-<body>
-  <div id="container">
-    <h2>JurisRx – Ask a Pharmacy Law Question</h2>
-    
-    <label for="state">Select State:</label>
-    <select id="state">
+<style>
+  html, body {
+    margin: 0; padding: 0; height: 100%;
+    background: #fafafa;
+    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  }
+
+  .chat-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+
+  /* Scrollable chat history container */
+  #chat-history {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    background: #f6f6f6;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .message {
+    max-width: 75%;
+    padding: 12px 16px;
+    border-radius: 18px;
+    font-size: 15px;
+    line-height: 1.4;
+    word-wrap: break-word;
+  }
+
+  .message.user {
+    background: #DCF8C6;
+    align-self: flex-end;
+    text-align: right;
+  }
+
+  .message.ai {
+    background: #ffffff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    align-self: flex-start;
+    text-align: left;
+  }
+
+  /* Fixed input area at bottom */
+  .input-area {
+    position: fixed;
+    bottom: 0;
+    left: 0; right: 0;
+    background: white;
+    border-top: 1px solid #ddd;
+    padding: 12px 20px;
+    box-sizing: border-box;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    align-items: center;
+    z-index: 10000;
+  }
+
+  .input-area select, .input-area textarea {
+    font-size: 16px;
+    border: 1px solid #ccc;
+    border-radius: 12px;
+    padding: 12px 16px;
+    box-sizing: border-box;
+  }
+
+  .input-area select {
+    width: 175px;
+    height: 44px;
+  }
+
+  .input-area textarea {
+    flex: 1;
+    min-height: 44px;
+    max-height: 200px;
+    resize: vertical;
+    font-family: inherit;
+  }
+
+  button#ask-button {
+    background: black;
+    border: none;
+    border-radius: 50%;
+    width: 44px;
+    height: 44px;
+    cursor: pointer;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+  }
+
+  button#ask-button svg {
+    stroke: white;
+    width: 24px;
+    height: 24px;
+  }
+
+  #loading {
+    position: fixed;
+    bottom: 80px;
+    right: 20px;
+    background: rgba(0,0,0,0.7);
+    color: white;
+    padding: 6px 12px;
+    border-radius: 12px;
+    font-style: italic;
+    display: none;
+    z-index: 10001;
+  }
+</style>
+
+<div class="chat-container">
+  <div id="chat-history">
+    <div class="message ai">Welcome to JurisRx. How can I help you with pharmacy law today?</div>
+  </div>
+
+  <div class="input-area">
+    <select id="state" aria-label="Select State">
+      <option value="" disabled selected>Select a state</option>
       <option value="indiana">Indiana</option>
       <option value="tennessee">Tennessee</option>
       <option value="southcarolina">South Carolina</option>
       <!-- Add more as needed -->
     </select>
 
-    <label for="question">Enter your legal question:</label>
-    <textarea id="question" rows="4" placeholder="e.g., What is the pharmacist to technician ratio in Indiana?"></textarea>
+    <textarea id="question" rows="1" placeholder="Ask your pharmacy law question..." autocomplete="off"></textarea>
 
-    <button id="ask-button">Ask</button>
-
-    <div id="loading" class="hidden">Loading...</div>
-
-    <div id="answer"></div>
+    <button id="ask-button" aria-label="Ask question">
+      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
+        <line x1="22" y1="2" x2="11" y2="13"></line>
+        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+      </svg>
+    </button>
   </div>
 
-  <script>
-    const backendUrl = 'https://jurisrx-backend.onrender.com/ask';
+  <div id="loading">JurisRx is reviewing legal documents...</div>
+</div>
 
-    document.getElementById('ask-button').addEventListener('click', async () => {
-      const state = document.getElementById('state').value;
-      const question = document.getElementById('question').value.trim();
-      const loading = document.getElementById('loading');
-      const answerDiv = document.getElementById('answer');
+<script>
+  const backendUrl = 'https://jurisrx-backend.onrender.com/ask';
 
-      if (!question) {
-        alert('Please enter a question.');
-        return;
-      }
+  const chatHistory = document.getElementById('chat-history');
+  const stateSelect = document.getElementById('state');
+  const questionInput = document.getElementById('question');
+  const askButton = document.getElementById('ask-button');
+  const loadingDiv = document.getElementById('loading');
 
-      loading.classList.remove('hidden');
-      answerDiv.textContent = '';
+  askButton.addEventListener('click', sendQuestion);
+  questionInput.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendQuestion();
+    }
+  });
 
-      try {
-        const response = await fetch(backendUrl, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-            // No Authorization header needed
-          },
-          body: JSON.stringify({ state, question })
-        });
+  async function sendQuestion() {
+    const state = stateSelect.value;
+    const question = questionInput.value.trim();
 
-        if (!response.ok) {
-          throw new Error(`Server error: ${response.status}`);
-        }
+    if (!state) {
+      alert('Please select a state.');
+      return;
+    }
+    if (!question) {
+      alert('Please enter a question.');
+      return;
+    }
 
-        const data = await response.json();
-        if (data.answer) {
-          answerDiv.textContent = data.answer;
-        } else {
-          answerDiv.textContent = "No answer received.";
-        }
-      } catch (error) {
-        console.error(error);
-        answerDiv.textContent = "Error: " + error.message;
-      } finally {
-        loading.classList.add('hidden');
-      }
-    });
-  </script>
-</body>
-</html>
+    appendMessage('user', question);
+    questionInput.value = '';
+    scrollChatToBottom();
+
+    loadingDiv.style.display = 'block';
+
+    try {
+      const response = await fetch(backendUrl, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ state, question })
+      });
+
+      if (!response.ok) throw new Error(`Server error: ${response.statusText}`);
+
+      const data = await response.json();
+      appendMessage('ai', data.answer || 'No answer available.');
+    } catch (error) {
+      appendMessage('ai', 'Error: ' + error.message);
+    } finally {
+      loadingDiv.style.display = 'none';
+      scrollChatToBottom();
+    }
+  }
+
+  function appendMessage(sender, text) {
+    const msg = document.createElement('div');
+    msg.className = `message ${sender}`;
+
+    // Replace **bold** with bold paragraphs and spacing above/below
+    let html = text
+      .replace(/\*\*(.+?)\*\*/g, (match, p1) =>
+        `<p style="margin-top:1em; margin-bottom:1em;"><strong>${p1}</strong></p>`
+      )
+      // Add spacing above lines containing IN SUMMARY (case insensitive)
+      .replace(/(^|\n)(.*IN SUMMARY.*)/gi, (match, before, line) =>
+        `${before}<div style="height:1em;"></div><p>${line}</p>`
+      );
+
+    msg.innerHTML = html;
+    chatHistory.appendChild(msg);
+  }
+
+  function scrollChatToBottom() {
+    chatHistory.scrollTop = chatHistory.scrollHeight;
+  }
+</script>
