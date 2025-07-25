@@ -8,7 +8,7 @@
   .chat-container {
     display: flex;
     flex-direction: column;
-    height: 100vh;
+    height: 50vh;
   }
 
   /* Scrollable chat history container */
@@ -51,32 +51,32 @@
     left: 0; right: 0;
     background: white;
     border-top: 1px solid #ddd;
-    padding: 12px 20px;
+    padding: 16px 20px;
     box-sizing: border-box;
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 12px;
     align-items: center;
     z-index: 10000;
   }
 
   .input-area select, .input-area textarea {
-    font-size: 16px;
+    font-size: 18px;
     border: 1px solid #ccc;
     border-radius: 12px;
-    padding: 12px 16px;
+    padding: 16px 20px;
     box-sizing: border-box;
   }
 
   .input-area select {
-    width: 175px;
-    height: 44px;
+    width: 180px;
+    height: 75px;
   }
 
   .input-area textarea {
     flex: 1;
-    min-height: 44px;
-    max-height: 200px;
+    min-height: 200px;
+    max-height: 200x;
     resize: vertical;
     font-family: inherit;
   }
@@ -85,8 +85,8 @@
     background: black;
     border: none;
     border-radius: 50%;
-    width: 44px;
-    height: 44px;
+    width: 50px;
+    height: 50px;
     cursor: pointer;
     display: flex;
     justify-content: center;
@@ -96,21 +96,55 @@
 
   button#ask-button svg {
     stroke: white;
-    width: 24px;
-    height: 24px;
+    width: 28px;
+    height: 28px;
   }
 
   #loading {
     position: fixed;
-    bottom: 80px;
+    bottom: 90px;
     right: 20px;
     background: rgba(0,0,0,0.7);
     color: white;
-    padding: 6px 12px;
+    padding: 8px 16px;
     border-radius: 12px;
     font-style: italic;
     display: none;
     z-index: 10001;
+    font-size: 16px;
+  }
+
+  /* Responsive adjustments */
+  @media (max-width: 600px) {
+    .input-area {
+      padding: 12px 16px;
+      gap: 8px;
+    }
+    .input-area select {
+      width: 140px;
+      height: 44px;
+      font-size: 16px;
+      padding: 12px 14px;
+    }
+    .input-area textarea {
+      min-height: 44px;
+      max-height: 100px;
+      font-size: 16px;
+      padding: 12px 14px;
+    }
+    button#ask-button {
+      width: 44px;
+      height: 44px;
+    }
+    button#ask-button svg {
+      width: 24px;
+      height: 24px;
+    }
+    #loading {
+      bottom: 75px;
+      font-size: 14px;
+      padding: 6px 12px;
+    }
   }
 </style>
 
