@@ -5,10 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Chat with States</title>
     <style>
-      body, html {
+      html, body {
         margin: 0; padding: 0; height: 100%;
         font-family: sans-serif;
         background: #f7f7f8;
+        overflow-y: auto; /* enable scrolling on the whole page */
       }
 
       .top-bar {
@@ -51,19 +52,15 @@
       }
 
       .chat-container {
-        max-width: 1000px;
-        margin: 0 auto;
-        height: calc(100vh - 60px - 50px);
-        padding-top: 60px;
-        padding-bottom: 300px; /* enough padding for nav + input */
+        width: 100%;
+        height: 100vh; /* viewport height minus top-bar (60px) and bottom input/nav (120px) */
         background: #fff;
-        border: 0px solid #ddd;
-        border-radius: 0px;
-        box-shadow: none;
-        overflow-y: auto;
         display: flex;
         flex-direction: column;
         position: relative;
+        overflow-y: auto; /* enable vertical scrolling */
+        box-sizing: border-box;
+        padding: 0px 0;
       }
 
       .message {
@@ -73,7 +70,7 @@
         font-size: 15px;
         line-height: 1.4;
         white-space: pre-wrap;
-        margin: 6px 12px;
+        margin: 10px 12px;
         box-shadow: 0 1px 2px rgba(0,0,0,0.05);
       }
 
@@ -81,13 +78,26 @@
         background-color: #daf8cb;
         border-bottom-right-radius: 4px;
         align-self: flex-end;
+        margin-right: 30%
       }
 
       .ai-message {
         background-color: #f0f0f0;
         border-bottom-left-radius: 4px;
-        align-self: flex-start;
-        margin-bottom: 50px; /* add margin so AI messages don't get hidden */
+        border-bottom-right-radius: 4px;
+        align-self: flex-start; /* keep left aligned */
+        margin-bottom: 10px;
+        margin-top: 10px;
+        max-width: 50%; /* restrict width */
+        margin-left: 30%; /* pushes it right from the left edge */
+      }
+
+      .chat-container .message:first-child {
+         margin-top: 90px; /* distance from top of page */
+      }
+
+        .chat-container .message:last-child {
+          margin-bottom: 210px; /* distance from bottom of page */
       }
 
       .nav-buttons {
@@ -167,6 +177,23 @@
         display: block;
       }
 
+      /* New disclaimer text below input */
+      .disclaimer {
+        position: fixed;
+        bottom: 7px; /* 25px below the input area (input bottom is 40px) */
+        left: 50%;
+        transform: translateX(-50%);
+        max-width: 600px;
+        width: 100%;
+        padding: 5px;
+        font-size: 9px;
+        color: #666;
+        text-align: center;
+        font-family: sans-serif;
+        z-index: 1000;
+        user-select: none;
+      }
+
       /* Loading indicator */
       #loadingIndicator {
         position: fixed;
@@ -225,6 +252,8 @@
         </svg>
       </button>
     </div>
+
+    <div class="disclaimer">JurisRx is an AI powered search tool and does not provide legal advice; consult a licensed attorney or state board of pharmacy for official guidance.</div>
 
     <script>
       const backendUrl = 'https://jurisrx-backend.onrender.com/ask';
