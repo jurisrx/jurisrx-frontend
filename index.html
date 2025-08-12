@@ -51,15 +51,15 @@
       }
 
       .chat-container {
-        max-width: 600px;
+        max-width: 1000px;
         margin: 0 auto;
         height: calc(100vh - 60px - 50px);
         padding-top: 60px;
-        padding-bottom: 200px;
-        background: #f0f0f0;
-        border: 1px solid #ddd;
-        border-radius: 12px;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        padding-bottom: 300px; /* enough padding for nav + input */
+        background: #fff;
+        border: 0px solid #ddd;
+        border-radius: 0px;
+        box-shadow: none;
         overflow-y: auto;
         display: flex;
         flex-direction: column;
@@ -84,14 +84,15 @@
       }
 
       .ai-message {
-        background-color: #fff;
+        background-color: #f0f0f0;
         border-bottom-left-radius: 4px;
         align-self: flex-start;
+        margin-bottom: 50px; /* add margin so AI messages don't get hidden */
       }
 
       .nav-buttons {
         position: fixed;
-        bottom: 160px;
+        bottom: 120px;
         left: 50%;
         transform: translateX(-50%);
         display: flex;
@@ -125,7 +126,7 @@
 
       .input-area {
         position: fixed;
-        bottom: 80px;
+        bottom: 40px;
         left: 50%;
         transform: translateX(-50%);
         width: 100%;
@@ -169,7 +170,7 @@
       /* Loading indicator */
       #loadingIndicator {
         position: fixed;
-        bottom: 140px;
+        bottom: 180px; /* Just above nav buttons */
         left: 50%;
         transform: translateX(-50%);
         background: rgba(0,0,0,0.7);
@@ -193,6 +194,8 @@
     </div>
 
     <div class="chat-container" id="chatWindow"></div>
+
+    <div id="loadingIndicator">JurisRx is quering legal documents...</div>
 
     <div class="nav-buttons">
       <a href="/user/subscription" aria-label="Subscription">
@@ -222,8 +225,6 @@
         </svg>
       </button>
     </div>
-
-    <div id="loadingIndicator">JurisRx is quering legal documents...</div>
 
     <script>
       const backendUrl = 'https://jurisrx-backend.onrender.com/ask';
