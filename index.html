@@ -1,254 +1,313 @@
-<style>
-  html, body {
-    margin: 0; padding: 0; height: 100%;
-    background: #fafafa;
-    font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
-  }
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Chat with States</title>
+    <style>
+      body, html {
+        margin: 0; padding: 0; height: 100%;
+        font-family: sans-serif;
+        background: #f7f7f8;
+      }
 
-  .chat-container {
-    display: flex;
-    flex-direction: column;
-    height: 50vh;
-  }
+      .top-bar {
+        position: fixed;
+        top: 0;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100%;
+        max-width: 600px;
+        background-color: #fff;
+        padding: 12px 16px;
+        border-radius: 16px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+      }
 
-  /* Scrollable chat history container */
-  #chat-history {
-    flex: 1;
-    overflow-y: auto;
-    padding: 20px;
-    background: #f6f6f6;
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
+      select {
+        flex: 1;
+        padding: 10px 16px;
+        font-size: 15px;
+        border-radius: 18px;
+        border: 1px solid #ccc;
+        outline: none;
+        cursor: pointer;
+        -webkit-appearance: none;
+        -moz-appearance: none;
+        appearance: none;
+        background-image:
+          linear-gradient(45deg, transparent 50%, gray 50%),
+          linear-gradient(135deg, gray 50%, transparent 50%),
+          linear-gradient(to right, #ccc, #ccc);
+        background-position:
+          calc(100% - 20px) calc(1em + 2px),
+          calc(100% - 15px) calc(1em + 2px),
+          calc(100% - 25px) 0.5em;
+        background-size: 5px 5px, 5px 5px, 1px 1.5em;
+        background-repeat: no-repeat;
+      }
 
-  .message {
-    max-width: 75%;
-    padding: 12px 16px;
-    border-radius: 18px;
-    font-size: 15px;
-    line-height: 1.4;
-    word-wrap: break-word;
-  }
+      .chat-container {
+        max-width: 600px;
+        margin: 0 auto;
+        height: calc(100vh - 60px - 50px);
+        padding-top: 60px;
+        padding-bottom: 200px;
+        background: #f0f0f0;
+        border: 1px solid #ddd;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        overflow-y: auto;
+        display: flex;
+        flex-direction: column;
+        position: relative;
+      }
 
-  .message.user {
-    background: #DCF8C6;
-    align-self: flex-end;
-    text-align: right;
-  }
+      .message {
+        max-width: 70%;
+        padding: 10px 14px;
+        border-radius: 18px;
+        font-size: 15px;
+        line-height: 1.4;
+        white-space: pre-wrap;
+        margin: 6px 12px;
+        box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+      }
 
-  .message.ai {
-    background: #ffffff;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
-    align-self: flex-start;
-    text-align: left;
-  }
+      .user-message {
+        background-color: #daf8cb;
+        border-bottom-right-radius: 4px;
+        align-self: flex-end;
+      }
 
-  /* Fixed input area at bottom */
-  .input-area {
-    position: fixed;
-    bottom: 0;
-    left: 0; right: 0;
-    background: white;
-    border-top: 1px solid #ddd;
-    padding: 16px 20px;
-    box-sizing: border-box;
-    display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-    align-items: center;
-    z-index: 10000;
-  }
+      .ai-message {
+        background-color: #fff;
+        border-bottom-left-radius: 4px;
+        align-self: flex-start;
+      }
 
-  .input-area select, .input-area textarea {
-    font-size: 18px;
-    border: 1px solid #ccc;
-    border-radius: 12px;
-    padding: 16px 20px;
-    box-sizing: border-box;
-  }
+      .nav-buttons {
+        position: fixed;
+        bottom: 160px;
+        left: 50%;
+        transform: translateX(-50%);
+        display: flex;
+        justify-content: center;
+        gap: 75px;
+        z-index: 1000;
+      }
 
-  .input-area select {
-    width: 180px;
-    height: 75px;
-  }
+      .nav-buttons a {
+        width: 55px;
+        height: 45px;
+        background-color: #000;
+        border-radius: 35%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-decoration: none;
+        transition: background 0.2s ease;
+      }
 
-  .input-area textarea {
-    flex: 1;
-    min-height: 200px;
-    max-height: 200x;
-    resize: vertical;
-    font-family: inherit;
-  }
+      .nav-buttons a:hover {
+        background-color: #333;
+      }
 
-  button#ask-button {
-    background: black;
-    border: none;
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
-    cursor: pointer;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    padding: 0;
-  }
+      .nav-buttons svg {
+        width: 20px;
+        height: 20px;
+        stroke: #fff;
+        stroke-width: 2;
+      }
 
-  button#ask-button svg {
-    stroke: white;
-    width: 28px;
-    height: 28px;
-  }
+      .input-area {
+        position: fixed;
+        bottom: 80px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 100%;
+        max-width: 600px;
+        background-color: #fff;
+        border-top: 1px solid #ddd;
+        padding: 12px 16px;
+        display: flex;
+        box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+        z-index: 1000;
+        border-radius: 16px;
+      }
 
-  #loading {
-    position: fixed;
-    bottom: 90px;
-    right: 20px;
-    background: rgba(0,0,0,0.7);
-    color: white;
-    padding: 8px 16px;
-    border-radius: 12px;
-    font-style: italic;
-    display: none;
-    z-index: 10001;
-    font-size: 16px;
-  }
+      textarea {
+        flex: 1;
+        resize: none;
+        font-size: 15px;
+        padding: 10px;
+        border-radius: 18px;
+        border: 1px solid #ccc;
+        outline: none;
+        font-family: sans-serif;
+      }
 
-  /* Responsive adjustments */
-  @media (max-width: 600px) {
-    .input-area {
-      padding: 12px 16px;
-      gap: 8px;
-    }
-    .input-area select {
-      width: 140px;
-      height: 44px;
-      font-size: 16px;
-      padding: 12px 14px;
-    }
-    .input-area textarea {
-      min-height: 44px;
-      max-height: 100px;
-      font-size: 16px;
-      padding: 12px 14px;
-    }
-    button#ask-button {
-      width: 44px;
-      height: 44px;
-    }
-    button#ask-button svg {
-      width: 24px;
-      height: 24px;
-    }
-    #loading {
-      bottom: 75px;
-      font-size: 14px;
-      padding: 6px 12px;
-    }
-  }
-</style>
+      button {
+        margin-left: 12px;
+        padding: 10px 16px;
+        border-radius: 18px;
+        border: none;
+        background-color: #000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        cursor: pointer;
+      }
 
-<div class="chat-container">
-  <div id="chat-history">
-    <div class="message ai">Welcome to JurisRx. How can I help you with pharmacy law today?</div>
-  </div>
+      button svg {
+        display: block;
+      }
 
-  <div class="input-area">
-    <select id="state" aria-label="Select State">
-      <option value="" disabled selected>Select a state</option>
-      <option value="indiana">Indiana</option>
-      <option value="tennessee">Tennessee</option>
-      <option value="southcarolina">South Carolina</option>
-      <!-- Add more as needed -->
-    </select>
+      /* Loading indicator */
+      #loadingIndicator {
+        position: fixed;
+        bottom: 140px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0,0,0,0.7);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 12px;
+        font-style: italic;
+        font-size: 14px;
+        display: none;
+        z-index: 1001;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="top-bar">
+      <select id="stateSelect" aria-label="Select a US state">
+        <option value="" disabled selected>Select a state</option>
+        <option value="indiana">Indiana</option>
+        <option value="tennessee">Tennessee</option>
+      </select>
+    </div>
 
-    <textarea id="question" rows="1" placeholder="Ask your pharmacy law question..." autocomplete="off"></textarea>
+    <div class="chat-container" id="chatWindow"></div>
 
-    <button id="ask-button" aria-label="Ask question">
-      <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24">
-        <line x1="22" y1="2" x2="11" y2="13"></line>
-        <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
-      </svg>
-    </button>
-  </div>
+    <div class="nav-buttons">
+      <a href="/user/subscription" aria-label="Subscription">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M4 6h16M4 12h16M4 18h16" />
+        </svg>
+      </a>
+      <a href="/user" aria-label="Home">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9.5L12 4l9 5.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1V9.5z" />
+        </svg>
+      </a>
+      <a href="/user/study" aria-label="Study">
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="16" rx="2" />
+          <path d="M7 4v16M17 4v16" />
+        </svg>
+      </a>
+    </div>
 
-  <div id="loading">JurisRx is reviewing legal documents...</div>
-</div>
+    <div class="input-area">
+      <textarea id="inputBox" rows="1" placeholder="Type your message..."></textarea>
+      <button id="sendBtn" aria-label="Send">
+        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"></circle>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+        </svg>
+      </button>
+    </div>
 
-<script>
-  const backendUrl = 'https://jurisrx-backend.onrender.com/ask';
+    <div id="loadingIndicator">JurisRx is quering legal documents...</div>
 
-  const chatHistory = document.getElementById('chat-history');
-  const stateSelect = document.getElementById('state');
-  const questionInput = document.getElementById('question');
-  const askButton = document.getElementById('ask-button');
-  const loadingDiv = document.getElementById('loading');
+    <script>
+      const backendUrl = 'https://jurisrx-backend.onrender.com/ask';
 
-  askButton.addEventListener('click', sendQuestion);
-  questionInput.addEventListener('keydown', e => {
-    if (e.key === 'Enter' && !e.shiftKey) {
-      e.preventDefault();
-      sendQuestion();
-    }
-  });
+      const chatWindow = document.getElementById('chatWindow');
+      const inputBox = document.getElementById('inputBox');
+      const sendBtn = document.getElementById('sendBtn');
+      const stateSelect = document.getElementById('stateSelect');
+      const loadingIndicator = document.getElementById('loadingIndicator');
 
-  async function sendQuestion() {
-    const state = stateSelect.value;
-    const question = questionInput.value.trim();
+      function appendMessage(text, from) {
+        const msgDiv = document.createElement('div');
+        msgDiv.classList.add('message');
+        msgDiv.classList.add(from === 'user' ? 'user-message' : 'ai-message');
 
-    if (!state) {
-      alert('Please select a state.');
-      return;
-    }
-    if (!question) {
-      alert('Please enter a question.');
-      return;
-    }
+        if(from === 'ai') {
+          // Basic formatting: convert **bold** to <strong> for AI messages
+          const formattedText = text.replace(/\*\*(.+?)\*\*/g, (_, p1) => `<strong>${p1}</strong>`);
+          msgDiv.innerHTML = formattedText;
+        } else {
+          msgDiv.textContent = text;
+        }
 
-    appendMessage('user', question);
-    questionInput.value = '';
-    scrollChatToBottom();
+        chatWindow.appendChild(msgDiv);
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+      }
 
-    loadingDiv.style.display = 'block';
+      function scrollChatToBottom() {
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+      }
 
-    try {
-      const response = await fetch(backendUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ state, question })
+      appendMessage('Hello! Ask me anything.', 'ai');
+
+      sendBtn.addEventListener('click', sendMessage);
+      inputBox.addEventListener('keydown', e => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+          e.preventDefault();
+          sendMessage();
+        }
       });
 
-      if (!response.ok) throw new Error(`Server error: ${response.statusText}`);
+      stateSelect.addEventListener('change', () => {
+        appendMessage(`You selected: ${stateSelect.options[stateSelect.selectedIndex].text}`, 'ai');
+        scrollChatToBottom();
+      });
 
-      const data = await response.json();
-      appendMessage('ai', data.answer || 'No answer available.');
-    } catch (error) {
-      appendMessage('ai', 'Error: ' + error.message);
-    } finally {
-      loadingDiv.style.display = 'none';
-      scrollChatToBottom();
-    }
-  }
+      async function sendMessage() {
+        const state = stateSelect.value;
+        const userText = inputBox.value.trim();
 
-  function appendMessage(sender, text) {
-    const msg = document.createElement('div');
-    msg.className = `message ${sender}`;
+        if (!state) {
+          alert('Please select a state.');
+          return;
+        }
+        if (!userText) return;
 
-    // Replace **bold** with bold paragraphs and spacing above/below
-    let html = text
-      .replace(/\*\*(.+?)\*\*/g, (match, p1) =>
-        `<p style="margin-top:1em; margin-bottom:1em;"><strong>${p1}</strong></p>`
-      )
-      // Add spacing above lines containing IN SUMMARY (case insensitive)
-      .replace(/(^|\n)(.*IN SUMMARY.*)/gi, (match, before, line) =>
-        `${before}<div style="height:1em;"></div><p>${line}</p>`
-      );
+        appendMessage(userText, 'user');
+        inputBox.value = '';
+        scrollChatToBottom();
 
-    msg.innerHTML = html;
-    chatHistory.appendChild(msg);
-  }
+        // Disable send button and show loading indicator
+        sendBtn.disabled = true;
+        loadingIndicator.style.display = 'block';
 
-  function scrollChatToBottom() {
-    chatHistory.scrollTop = chatHistory.scrollHeight;
-  }
-</script>
+        try {
+          const response = await fetch(backendUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ state, question: userText }),
+          });
+
+          if (!response.ok) throw new Error(`Server error: ${response.statusText}`);
+
+          const data = await response.json();
+          appendMessage(data.answer || 'No answer available.', 'ai');
+        } catch (error) {
+          appendMessage('Error: ' + error.message, 'ai');
+        } finally {
+          // Re-enable send button and hide loading indicator
+          sendBtn.disabled = false;
+          loadingIndicator.style.display = 'none';
+          scrollChatToBottom();
+        }
+      }
+    </script>
+  </body>
+</html>
